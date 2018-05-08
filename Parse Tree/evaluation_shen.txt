@@ -1,0 +1,63 @@
+Author:Shen Gao
+Before classifying the sentences, from the simple grammer we can claim that:
+1)If there is no prep phrase after subject, subject contains fname,fname fname,fpron,fn,fd fn. If there are prep phrases after subject, subject only contains fn and fd fn.
+2)Object and object complement always contains fname,fname fname,fpron,fn,fd fn.
+3)fv can always be replaced by faux fv except when faux is at the head of the sentence.
+4)If there is a prep phrases in one position, this position can always add more prep phrases.
+
+Sorts of sentences success to parse:
+1.subject + fv
+Example: john lives
+2.subject + faux + fv
+Example: buckaroo banzai is driving
+3.subject + pp + fv
+Example: the alien from chicago lives
+4.subject + fv + pp
+Example: he lives in chicago on earth
+5.subject + fv + object
+Example: john whorfin steals a watermelon
+6.subject + pp + fv + object
+Example: aliens from ten planet steal watermelons
+7.subject + fv + object + pp
+Example: aliens steal watermelons from ten planet to earth
+8.subject + fv + object + object complement
+Example: buckaroo banzai gives us a jetcar
+9.subject + pp + fv + object + object complement
+Example: aliens from planet give us a jetcar
+10.subject + fv + object + object complement + pp
+Example: buckaroo banzai gives us a jetcar from aliens
+11.subject + fv + object + pp + object complement
+Example: buckaroo banzai give john whorfin from chicago a watermelon
+12.from 1 to 11(except 2),add faux at the head of sentence to change into a question sentence
+Examples: does john live
+          is he driving to chicago on earth
+          does buckaroo banzai give us a jetcar
+          do buckaroo banzai give john whorfin from chicago a watermelon
+13.subject fis object
+Example: buckaroo banzai is alien
+14.subject pp fis object
+Example: the alien on earth is buckaroo banzai
+15.subject fis object pp
+Example: it is the alien from planet
+
+Types of sentences fail to parse:
+1.subject + faux + pp
+Example: she is from chicago
+2.vp
+Example: steal a watermelon
+3.fname/fname fname + pp + fv + pp
+Example: buckaroo banzai from planet is driving on earth
+4.fd + fname + ...
+Example: this planet + ...
+5.fd + faux + fd + fn
+Example: this is a watermelon
+
+Improvements to grammar such that we can properly parse the failed sentences:
+By adding following functionality:
+0	s	vp
+0	s	fd fis np
+0	vbar	faux
+0	nbar	fname
+0	nbar	fname fname
+And modifying:
+0	nbar	fn nbar-mods  to  0	nbar	nbar nbar-mods

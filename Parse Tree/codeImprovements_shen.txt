@@ -1,0 +1,192 @@
+Author:Shen Gao
+Functions added:
+1.Class Grammar:parseTree
+param cols,finished
+        //this is the current column; a vector of production indices
+        Vector cur = new Vector();    cur.clear();
+        //This list is to store productions and their children
+        //The children are productions of the parent can induce
+        List<Production> list = new ArrayList<>();
+        //Add the ROOT production into list
+        list.add(p);
+        //Traverse the DP table from tail to head
+        for(int j=cols.size()-1;j>=0;j--){
+            cur = (Vector)cols.get(j);
+            for(int k=cur.size()-1;k>=0;k--){
+                p = (Production)cur.get(k);
+                //Production p has a pointer
+                if(p.pointer != null){
+                    //Traverse the list
+                    for(int l=0;l<list.size();l++){
+                        //A production in DP table syntax equals to a production in list
+                        if(list.get(l).syntaxEquals(p)){
+                            //Allocate space for children of list element
+                            if(list.get(l).children == null){
+                                int childnum = list.get(l).right.length;
+                                list.get(l).children = new Production[childnum];
+                            }
+                            //Inducing relationship is based on the last inducing pointer
+                            //Avoid children to be updated
+                            if(list.get(l).children[p.dot-1]==null){
+                                p.pointer = list.get(l).spawn(p.dot-1, p.pointer);
+                            }
+                            //This flag is to decide if a production can be added into list
+                            int flag = 0;
+                            //If there is a non-ternimal symbol at the right of production, set the flag to 1
+                            for(int m=0;m<p.pointer.right.length;m++){
+                                if(isNonTerminal(p.pointer.right[m])){
+                                    flag = 1;
+                                }
+                            }
+                            //If an element in list syntax equals to the production, set the flag to 0
+                            for(int m=0;m<list.size();m++){
+                                if(list.get(m).syntaxEquals(p.pointer)){
+                                    flag = 0;
+                                }
+                            }
+                            //If flag is 1, add the production into list
+                            if(flag == 1)
+                                list.add(p.pointer);
+                        }
+                    }
+                }
+            }
+        }
+        
+        //Initialize the root of parse tree
+        Production root = new Production((Production)getProds("ROOT").get(0));
+        root.dot = root.right.length;
+        //Build the parse tree based on the list
+        while(!list.isEmpty()){
+            for(int j=0;j<list.size();j++){
+                p = list.get(j);
+                //If the right of production is non terminal,pass this production
+                if(!isNonTerminal(p.pointer.right[0])){
+                    list.remove(p);
+                    j--;
+                    continue;
+                }
+                //Search the current tree by BFS
+                Queue<Production> queue = new ArrayDeque<>();
+                Set<Production> set = new HashSet<>();
+                queue.add(root);
+                while(!queue.isEmpty()){
+                    Production q = queue.remove();
+                    //A production in the list syntax equals to a production in the parse tree
+                    if(q.syntaxEquals(p)){
+                        int childnum = q.right.length;
+                        q.children = new Production[childnum];
+                        //Set the children of production in the list to the children of production in the parse tree
+                        for(int k=0;k<p.children.length;k++){
+                            p.children[k] = q.spawn(k,p.children[k]);
+                        }
+                        //Remove production p from the list
+                        list.remove(p);
+                        j--;
+                        break;
+                    }
+                    if(q.children != null){
+                        for(int k=0;k<q.children.length;k++){
+                            if(set.contains(q.children[k])){
+                                continue;
+                            }
+                            if(!queue.contains(q.children[k])){
+                                queue.add(q.children[k]);
+                            }
+                        }
+                    }
+                    //Production is not found in the parse tree
+                    if(queue.isEmpty()){
+                        list.remove(p);
+                        j--;
+                    }
+                    set.add(q);
+                }
+            }
+        }
+return root
+
+This function is to build parse tree and return the root of parse tree
+
+2.Class Production:syntaxEquals
+param p(a production in the list),q(a production of parse tree)
+        if(left != p.left || right.length != p.right.length)
+            return false;
+        for(int i=0;i<right.length;i++)
+            if(right[i] != p.right[i])
+                return false;
+        return true;
+
+This function is to recognize two productions which have the same left and right.
+
+3.Class Production:recursivePrint
+param root
+        if(this == null)
+            return;
+        System.out.print(left+"[");
+        if(children == null){
+            System.out.print(right[0]);
+        }
+        if(children != null){
+            for(int i=0;i<children.length;i++){
+                children[i].recursivePrint();
+            }
+        }
+        System.out.print("]");
+return String of parse tree
+
+This function is to traverse the parse tree by DFS and print parse tree
+
+4.Class Production:computeProb
+param root
+        //Initialize the probability
+        float result = 1.0f;
+        Production p = new Production();
+        //Traverse the tree by BFS
+        Queue<Production> queue = new ArrayDeque<>();
+        Set<Production> set = new HashSet<>();
+        queue.add(this);
+        while(!queue.isEmpty()){
+            p = queue.remove();
+            result = result * p.probability;
+            if(p.children != null){
+                for(int i=0;i<p.children.length;i++){
+                    if(set.contains(p.children[i])){
+                        continue;
+                    }
+                    if(!queue.contains(p.children[i])){
+                        queue.add(p.children[i]);
+                    }
+                }
+            }
+        }
+        //Print result
+        System.out.println("The probability of this sentence is "+result);
+return probabilty of sentence
+
+This function is to traverse the parse tree by BFS and compute probability of sentence
+
+Code Modified:
+Class Production:
+added a Production variable: pointer
+Class grammar:
+added a line: r.pointer = p
+
+This modification is to record the inducing relationship of Production p and Produciton r.
+
+Improvements:
+1)The parse tree of a sentence can be built and printed.
+2)The probability of a sentence can be computed.
+Some outputs:
+1.i was driving to chicago
+ROOT[s[np[fpron[i]]vp[vbar[faux[was]fv[driving]]vbar-mods[pp[fp[to]np[fname[chicago]]]]]]]
+The probability of this sentence is 4.860001E-8
+2.john whorfin steals a watermelon
+ROOT[s[np[fname[john]fname[whorfin]]vp[vbar[vbar[fv[steals]]np[fd[a]nbar[fn[watermelon]]]]]]]
+The probability of this sentence is 1.8900003E-8
+3.the alien from chicago lives
+ROOT[s[np[fd[the]nbar[fn[alien]nbar-mods[pp[fp[from]np[fname[chicago]]]]]]vp[vbar[fv[lives]]]]]
+The probability of this sentence is 3.0240005E-7
+
+Other Improvements could be made:
+Produce the parse forest for ambiguous sentences and compare the probability of each parse tree still need to be done.

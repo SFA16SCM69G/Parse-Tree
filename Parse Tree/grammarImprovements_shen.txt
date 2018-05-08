@@ -1,0 +1,74 @@
+Author:Shen Gao
+Look at the grammar. What changes to the grammar alone could improve the parsing (in particular, consider coordinated conjunctions)? Modify the grammar somewhat and evaluate the improvements. What new sentences may be parsed? What invalid sentences are now parsed (if any)?
+
+The grammar we used is from part1, we are planning add some new grammar to improve the parsing .
+
+The grammar we added with the coordinated conjunctions("and","or","but") and adjective("complicated","friendly","scary","simple").
+
+The new functionality has been added as follows:
+0       s       s fconj s
+0       np      np fconj np
+0       vp      vp fconj vp
+0       fname   fname fconj
+0       fpron   fpron fconj fpron
+0       fv      fv fconj fv
+0       fconj   and
+0       fconj   or
+0       fconj   but
+0	s	np
+0       s       np fis adj
+0	nbar	adj nbar
+0       adj	adj adj
+0       adj	adj conj
+0       adj	complicated
+0       adj	friendly
+0       adj	scary
+0       adj	simple
+
+Improvement:
+Now we can parsing the sentence with "and, or ,but" and have adjective in front of noun.
+
+What new sentences may be parsed? 
+1.s fconj s
+Example: you give us watermelons but we give you a jetcar
+2.np fconj np + fv + pp
+Example: buckaroo banzai and john whorfin drive to chicago
+3.subject + vp fconj vp
+Example: he steals a jetcar and drives to chicago
+4.fname fconj + fname + fv + pp
+Example: buckaroo and john drive to chicago
+5.fpron fconj fpron
+Example: he and she live in chicago
+6.subject + fv fconj fv + pp
+Example: he steals and lives in chicago
+7.faux subject 
+Example: is it a watermelon or a alien
+8.adj + subject
+Example: scary aliens
+9.subject + fis + adj
+Example: he is simple
+10.adj nbar + vp
+Example: complicated john steals a jetcar
+11.subject + fis + adj adj + np
+Example: he is a friendly simple alien
+12.subject + fis + adj[adj conj] adj
+Example: he is simple but scary
+13.subject + vp
+Example: aliens give you a scary and complicated watermelon
+14.adj conj adj + np
+Example: simple and scary aliens
+
+
+What invalid sentences are now parsed (if any)?
+1.subject faux conj faux
+Example: we will and is alien
+2.subject + fis
+Example: he is 
+3.np conj vp
+Example: john and drives
+4.s conj np
+Example: i was dirving and we
+5.s conj vp
+Example: i was driving and steal
+
+
